@@ -4,6 +4,13 @@ import AWS from 'aws-sdk';
 const SNS = new AWS.SNS();
 
 export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> => {
+    if (!isAPIGatewayEvent(event)) {
+        return buildResponse(400, {
+            status: 'error',
+            message: 'invalid trigger'
+        });
+    }
+
     const context = event.requestContext;
 
     if (context.http.method === 'GET' && context.http.path === '/') {
@@ -26,6 +33,10 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
         status: 'error',
         message: 'not found'
     });
+};
+
+const isAPIGatewayEvent = (event: APIGatewayProxyEventV2): boolean => {
+    return 'requestContext' in event && 'http' in event.requestContext;
 };
 
 const sendSnsNotification = async (uploadedContent: string) => {
