@@ -1,9 +1,9 @@
-import { APIGatewayProxyEventV2 } from 'aws-lambda';
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import AWS from 'aws-sdk';
 
 const SNS = new AWS.SNS();
 
-export const handler = async (event: APIGatewayProxyEventV2) => {
+export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> => {
     const context = event.requestContext;
 
     if (context.http.method === 'GET' && context.http.path === '/') {
@@ -48,7 +48,7 @@ const extractBody = (event: APIGatewayProxyEventV2): string => {
     }
 };
 
-const buildResponse = (statusCode: number, responseBody: unknown) => {
+const buildResponse = (statusCode: number, responseBody: unknown): APIGatewayProxyResultV2 => {
     return {
         statusCode: statusCode,
         headers: {
