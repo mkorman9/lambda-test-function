@@ -11,13 +11,7 @@ export const handler = async (event: APIGatewayProxyEventV2) => {
             })
         };
     } else if (context.http.method === 'POST' && context.http.path === '/upload/something') {
-        let body: string;
-
-        if (event.isBase64Encoded) {
-            body = Buffer.from(event.body, 'base64').toString('utf8');
-        } else {
-            body = event.body;
-        }
+        const body = extractBody(event);
 
         console.log(`Uploaded ${body}`);
 
@@ -36,4 +30,12 @@ export const handler = async (event: APIGatewayProxyEventV2) => {
             message: 'not found'
         })
     };
+};
+
+const extractBody = (event: APIGatewayProxyEventV2): String => {
+    if (event.isBase64Encoded) {
+        return Buffer.from(event.body, 'base64').toString('utf8');
+    } else {
+        return event.body;
+    }
 };
