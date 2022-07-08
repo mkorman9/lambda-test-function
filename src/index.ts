@@ -4,32 +4,23 @@ export const handler = async (event: APIGatewayProxyEventV2) => {
     const context = event.requestContext;
 
     if (context.http.method === 'GET' && context.http.path === '/') {
-        return {
-            statusCode: 200,
-            body: JSON.stringify({
-                status: 'ok'
-            })
-        };
+        return buildResponse(200, {
+            status: 'ok'
+        });
     } else if (context.http.method === 'POST' && context.http.path === '/upload/something') {
         const body = extractBody(event);
 
         console.log(`Uploaded ${body}`);
 
-        return {
-            statusCode: 200,
-            body: JSON.stringify({
-                status: 'ok'
-            })
-        };
+        return buildResponse(200, {
+            status: 'ok'
+        });
     }
 
-    return {
-        statusCode: 404,
-        body: JSON.stringify({
-            status: 'error',
-            message: 'not found'
-        })
-    };
+    return buildResponse(404, {
+        status: 'error',
+        message: 'not found'
+    });
 };
 
 const extractBody = (event: APIGatewayProxyEventV2): String => {
@@ -38,4 +29,15 @@ const extractBody = (event: APIGatewayProxyEventV2): String => {
     } else {
         return event.body;
     }
+};
+
+const buildResponse = (statusCode: number, responseBody: unknown) => {
+    return {
+        statusCode: statusCode,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        isBase64Encoded: false,
+        body: JSON.stringify(responseBody)
+    };
 };
