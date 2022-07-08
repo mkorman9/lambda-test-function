@@ -2,6 +2,7 @@ import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from 'aws-lambda';
 import AWS from 'aws-sdk';
 
 const SNS = new AWS.SNS();
+const SECRET = process.env.SECRET || 'default-secret';
 
 export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2> => {
     if (!isAPIGatewayEvent(event)) {
@@ -18,6 +19,13 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
             status: 'ok'
         });
     } else if (context.http.method === 'POST' && context.http.path === '/upload/something') {
+        if (!authorizeRequest(event)) {
+            return buildResponse(401, {
+                status: 'error',
+                message: 'authorization failed'
+            });
+        }
+
         const body = extractBody(event);
 
         console.log(`Uploaded ${body}`);
@@ -37,6 +45,10 @@ export const handler = async (event: APIGatewayProxyEventV2): Promise<APIGateway
 
 const isAPIGatewayEvent = (event: APIGatewayProxyEventV2): boolean => {
     return 'requestContext' in event && 'http' in event.requestContext;
+};
+
+const authorizeRequest = (event: APIGatewayProxyEventV2): boolean => {
+    return event.headers['x-secret'] === SECRET;
 };
 
 const sendSnsNotification = async (uploadedContent: string) => {
